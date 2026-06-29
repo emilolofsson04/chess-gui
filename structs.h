@@ -11,6 +11,7 @@ struct piece {
     int file;
     int alive;
     int hasBeenMoved;
+    int value;
 };
 
 struct move {
@@ -26,6 +27,14 @@ struct move {
     int moveType;
     int promotionPiece;
 };     
+
+struct GameState {
+    char Board[8][8];
+    struct piece whitePieces[16];
+    struct piece blackPieces[16];
+    int ctp;
+
+};
 
 struct pngs {
     Texture2D wPawn;
@@ -43,4 +52,41 @@ struct pngs {
     Texture2D bKing;
 };
 
+struct Pieces {
+    int whitePawns;
+    int blackPawns;
+    int whiteKnights;
+    int blackKnights;
+    int whiteBishops;
+    int blackBishops;
+    int whiteRooks;
+    int blackRooks;
+    int whiteQueens;
+    int blackQueens;
+};
+
+
+typedef struct {
+    Color boardLight;
+    Color boardDark;
+    Color panelBg;
+    Color panelBorder;
+    Color textMuted;
+    Color accentCheck;
+    Color WINDOW;
+} ChessTheme;
+
+struct Gui {
+    int squareSize;
+    int xoffset;
+    int yoffset;
+    int evalbarSize;
+    int evalbarY;
+    int textboxSize;
+    int boardSize;
+    int x;
+    int y;
+};
+
 #endif
+

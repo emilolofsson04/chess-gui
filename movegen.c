@@ -21,7 +21,29 @@ bool isFree(char board[8][8], int targetRank, int targetFile ) {
         return true;
     }
 }
-bool pawnmove(bool* ctp, int* totMov, struct move legalMoves[256], int pInd, int pcolour, char type, int rank, int file, char board[8][8], int length,  int rdir, int fdir, int step, struct move* playedMoves) {
+int promotionCheck(struct move inputMove, char board[8][8], struct move legalMoves[256], int* totLegMov) {
+    int isPromoMoveLegal = 0;
+    int targetRank = inputMove.targetRank;
+    int startFile = inputMove.startFile;
+    int startRank = inputMove.startRank;
+
+    if ((targetRank == 1 || targetRank == 8) && (board[startRank-1][startFile-1] == 'p' || board[startRank-1][startFile-1] == 'P')) {
+        for (int i = 0; i < *totLegMov; i++) {
+            if (legalMoves[i].startRank  == inputMove.startRank  &&
+                legalMoves[i].startFile  == inputMove.startFile  &&
+                legalMoves[i].targetRank == inputMove.targetRank &&
+                legalMoves[i].targetFile == inputMove.targetFile) {
+
+                isPromoMoveLegal = 1;
+                break;
+            }
+        }
+    }
+
+    return isPromoMoveLegal;
+
+}
+bool pawnmove(int ctp, int* totMov, struct move legalMoves[256], int pInd, int pcolour, char type, int rank, int file, char board[8][8], int length,  int rdir, int fdir, int step, struct move* playedMoves) {
     /*
      Checks if a pawn move is legal,
      including captures. Any found move
@@ -124,7 +146,7 @@ bool knightmove(int* totMov, struct move legalMoves[256], int pInd, int pcolour,
     return false;
 }
 
-bool legalMove(bool* ctp, int* totMov, struct move legalMoves[256], int pInd, int pcolour, char type, int rank, int file, char board[8][8], int length,  int rdir, int fdir, int step) {
+bool legalMove(int ctp, int* totMov, struct move legalMoves[256], int pInd, int pcolour, char type, int rank, int file, char board[8][8], int length,  int rdir, int fdir, int step) {
 
     /*
      Checks legal moves in one direction from a piece,
@@ -195,7 +217,7 @@ bool castleCheck(int* totMov, struct move legalMoves[256], int pInd, int pcolour
 }
 
 
-void moveChecker(bool* ctp, int* totMov, struct move legalMoves[256], int pInd, int pcolour, char type, int rank, int file, char board[8][8], struct move* playedMoves, struct piece Pieces[16]) {
+void moveChecker(int ctp, int* totMov, struct move legalMoves[256], int pInd, int pcolour, char type, int rank, int file, char board[8][8], struct move* playedMoves, struct piece Pieces[16]) {
 
     
     /*
@@ -282,7 +304,7 @@ void moveChecker(bool* ctp, int* totMov, struct move legalMoves[256], int pInd, 
     }
 
 }
-void AllMoves(bool* ctp, int* totMov, struct move legalMoves[256], struct piece wPieces[16], struct piece bPieces[16], char board[8][8], struct move* playedMoves) {
+void AllMoves(int* totMov, struct move legalMoves[256], struct GameState* gs, struct move* playedMoves) {
     /* 
      Iterates over each piece,
      and calls moveChecker for each piece,
@@ -293,7 +315,7 @@ void AllMoves(bool* ctp, int* totMov, struct move legalMoves[256], struct piece 
     int file;
     int pieceInd;
     int pcolour;
-    struct piece* Pieces = *ctp ? wPieces : bPieces;
+    struct piece* Pieces = gs->ctp ? gs->whitePieces : gs->blackPieces;
     
     for(int i = 0; i < 16; i++) {
         if (Pieces[i].alive) {
@@ -301,8 +323,8 @@ void AllMoves(bool* ctp, int* totMov, struct move legalMoves[256], struct piece 
             rank = Pieces[i].rank;
             file = Pieces[i].file;
             pieceInd = i;
-            pcolour = *ctp;
-            moveChecker(ctp, totMov, legalMoves, pieceInd, pcolour, type, rank, file, board, playedMoves, Pieces); 
+            pcolour = gs->ctp;
+            moveChecker(gs->ctp, totMov, legalMoves, pieceInd, pcolour, type, rank, file, gs->Board, playedMoves, Pieces); 
 
         }
     }

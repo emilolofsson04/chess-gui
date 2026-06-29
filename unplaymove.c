@@ -8,7 +8,7 @@
 #include "playmove.h"
 #include "unplaymove.h"
 
-void unplaymove(bool* ctp, struct move playedMove, struct piece wPieces[16], struct piece bPieces[16]){
+void unplaymove(struct move playedMove, struct GameState* gs){
 
     /*
      unExecutes the move, by changing postion of the moved piece,
@@ -19,8 +19,8 @@ void unplaymove(bool* ctp, struct move playedMove, struct piece wPieces[16], str
      *  piece wPieces: set of white pieces
      *  piece bPieces: set of black pieces
      */
-    struct piece* aPieces = *ctp ? wPieces : bPieces;
-    struct piece* ePieces = *ctp ? bPieces : wPieces;
+    struct piece* aPieces = gs->ctp ? gs->whitePieces : gs->blackPieces;
+    struct piece* ePieces = gs->ctp ? gs->blackPieces : gs->whitePieces;
     
     int i = playedMove.capturedIndex;
     int pInd = playedMove.pieceIndex;
@@ -45,12 +45,14 @@ void unplaymove(bool* ctp, struct move playedMove, struct piece wPieces[16], str
         case 4:
             capturedRank = playedMove.targetRank;
 
-            if (*ctp) {
+            if (gs->ctp) {
                 aPieces[pInd].type = 'p';
             }
             else {
                 aPieces[pInd].type = 'P';
             }
+            aPieces[pInd].value = 1;
+
             break;
     }
 

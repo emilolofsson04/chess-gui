@@ -27,7 +27,7 @@ void printBoard(char board[8][8]) {
     }
 }
 
-void updateboard(char board[8][8], struct piece wPieces[16], struct piece bPieces[16]) {
+void updateboard(struct GameState* gs) {
 
     /*
      Redraws the board 
@@ -37,22 +37,22 @@ void updateboard(char board[8][8], struct piece wPieces[16], struct piece bPiece
     int file;
     for(int i = 0; i < 8; i++) {
         for(int k = 0; k < 8; k++) {
-            board[i][k] = '.';
+            gs->Board[i][k] = '.';
         }
     }
     for(int i = 0; i < 16; i++) {
-        if (wPieces[i].alive) {
-            rank = wPieces[i].rank-1;
-            file = wPieces[i].file-1;
+        if (gs->whitePieces[i].alive) {
+            rank = gs->whitePieces[i].rank-1;
+            file = gs->whitePieces[i].file-1;
         
-            board[rank][file] = wPieces[i].type;
+            gs->Board[rank][file] = gs->whitePieces[i].type;
         }
     }
     for(int i = 0; i < 16; i++) {
-        if (bPieces[i].alive) {
-            rank = bPieces[i].rank-1;
-            file = bPieces[i].file-1;
-            board[rank][file] = bPieces[i].type;
+        if (gs->blackPieces[i].alive) {
+            rank = gs->blackPieces[i].rank-1;
+            file = gs->blackPieces[i].file-1;
+            gs->Board[rank][file] = gs->blackPieces[i].type;
         }
     }
 }

@@ -28,24 +28,40 @@ struct move translate(char move[6], bool* ctp) {
            char blackPromo[4] = {'Q', 'R', 'B', 'N'};
            char* Promo = *ctp ? whitePromo : blackPromo;
             
-
             for (int i = 0; i < 4; i++) {
                 if (move[4] == Promo[i]) {
                     move[4] = i;
                     break;
                 }
-                
             }
             inputMove.promotionPiece = move[4]; // number from 0-7;
-            printf("Promotion piece is %d", move[4]);
-
         }
-        
         inputMove.colour = *ctp;
     }   
     return inputMove;
 }
 
+void capturedPiecesUpdates(struct move playedMove, struct Pieces* CapturedPieces, struct GameState* gs) {
+    if (playedMove.capturedIndex != -1) {
+        struct piece capturedPiece;
+        capturedPiece = (gs->ctp) ? gs->blackPieces[playedMove.capturedIndex] : gs->whitePieces[playedMove.capturedIndex];
+
+        char capturedType = capturedPiece.type;
+
+        switch (capturedType) {
+            case 'p': CapturedPieces[0].whitePawns++;   break;
+            case 'P': CapturedPieces[0].blackPawns++;   break;
+            case 'r': CapturedPieces[0].whiteRooks++;   break;
+            case 'R': CapturedPieces[0].blackRooks++;   break;
+            case 'n': CapturedPieces[0].whiteKnights++; break;
+            case 'N': CapturedPieces[0].blackKnights++; break;
+            case 'b': CapturedPieces[0].whiteBishops++; break;
+            case 'B': CapturedPieces[0].blackBishops++; break;
+            case 'q': CapturedPieces[0].whiteQueens++;  break;
+            case 'Q': CapturedPieces[0].blackQueens++;  break;
+        }
+    }
+}
 void moveupdates(struct move legalMoves[256], int* totMov, int rank, int file, int pInd, int pcolour, int targetRank, int targetFile, int capture, char type, int movetype) {
     /*
      Updates the list of legal moves
@@ -88,7 +104,7 @@ void moveupdates(struct move legalMoves[256], int* totMov, int rank, int file, i
     
 }
 
-void playmove(bool* ctp, struct move playedMove[1], struct piece wPieces[16], struct piece bPieces[16]){
+void playmove(struct move playedMove[1], struct GameState* gs){
 
     /*
      Executes the move, by changing postion of the moved piece,
@@ -100,8 +116,8 @@ void playmove(bool* ctp, struct move playedMove[1], struct piece wPieces[16], st
      *  piece bPieces: set of black pieces
      */
 
-    struct piece* aPieces = *ctp ? wPieces : bPieces;
-    struct piece* ePieces = *ctp ? bPieces : wPieces;
+    struct piece* aPieces = gs->ctp ? gs->whitePieces : gs->blackPieces;
+    struct piece* ePieces = gs->ctp ? gs->blackPieces : gs->whitePieces;
 
     int captureRank = 0;
     int targetFile = playedMove[0].targetFile;
@@ -110,6 +126,9 @@ void playmove(bool* ctp, struct move playedMove[1], struct piece wPieces[16], st
 
     char whitePromo[4] = {'q', 'r', 'b', 'n'};
     char blackPromo[4] = {'Q', 'R', 'B', 'N'};
+    int pieceValues[4] = {9, 5, 3, 3};
+
+
 
     // Switch case for handling normal captures (case 1) and special moves, en passant (case 1)
     // castling (case 2and 3), and promotion (case 4).
@@ -132,12 +151,14 @@ void playmove(bool* ctp, struct move playedMove[1], struct piece wPieces[16], st
         captureRank = playedMove[0].targetRank; // Standard in promotion (not garanteed to be a capture)
 
         // Sets the piece type of the pawn to whatever was input
-        if (*ctp) {
+        if (gs->ctp) {
             aPieces[pInd].type = whitePromo[playedMove[0].promotionPiece]; 
         }
         else {
             aPieces[pInd].type = blackPromo[playedMove[0].promotionPiece];
         }
+        aPieces[pInd].value = pieceValues[playedMove[0].promotionPiece];
+
         break;
     }
 
@@ -166,7 +187,7 @@ void playmove(bool* ctp, struct move playedMove[1], struct piece wPieces[16], st
                         aPieces[i].rank = playedMove[0].startRank;
                         aPieces[i].file = startFile;
                         aPieces[i].hasBeenMoved++;
-                        playedMove[0].capturedIndex = i; // Set the capture index in order to easy unmove (capture is still = -1)
+                        playedMove[0].capturedIndex = i; // Set the capture index in order to easy unmove (capture is still = 0)
                         break;
                     }
             }
